@@ -1,0 +1,144 @@
+NAME
+    Declare::Constraints::Simple - Declarative Validation of Data Structures
+
+SYNOPSIS
+      use Declare::Constraints::Simple-All;
+
+      my $profile = IsHashRef(
+                        -keys   => HasLength,
+                        -values => IsArrayRef( IsObject ));
+
+      my $result1 = $profile->(undef);
+      print $result1->message, "\n";    # 'Not a HashRef'
+
+      my $result2 = $profile->({foo => [23]});
+
+      print $result2->message, "\n";    # 'Not an Object'
+
+      print $result2->path, "\n";       
+                        # 'IsHashRef[val foo].IsArrayRef[0].IsObject'
+
+DESCRIPTION
+    The main purpose of this module is to provide an easy way to build a
+    profile to validate a data structure. It does this by providing you with
+    a set of declarative keywords exported into your namespace.
+
+USAGE
+      use Declare::Constraints::Simple-All;
+
+    The above command imports all constraint generators in the library into
+    the current namespace. If you want only a selection, use "only":
+
+      use Declare::Constraints::Simple Only => qw(IsInt Matches And);
+
+    You can find all constraints (and constraint-like generators, like
+    operators. In fact, "And" above is an operator. They're both implemented
+    equally, so the distinction is a merely philosophical one) documented in
+    the Declare::Constraints::Simple::Library pod. In that document you will
+    also find the exact parameters for their usage, so this here is just a
+    brief Intro and not a coverage of all possibilities.
+
+    You can use these constraints by building a tree that describes what
+    data structure you expect. Every constraint can be used as
+    sub-constraint, as parent, if it accepts other constraints, or
+    stand-alone. If you'd just say
+
+      my $check = IsInt;
+      print "yes!\n" if $check->(23);
+
+    it will work too. This also allows predefining tree segments, and
+    nesting them:
+
+      my $id_to_objects = IsArrayRef(IsObject);
+
+    Here $id_to_objects would give it's OK on an array reference containing
+    a list of objects. But what if we now decide that we actually want a
+    hashref containing two lists of objects? Behold:
+
+      my $object_lists = IsHashRef( HasAllKeys( qw(good bad) ),
+                                    OnHashKeys( good => $id_to_objects,
+                                                bad  => $id_to_objects ));
+
+    As you can see, constraints like "IsArrayRef" and "IsHashRef" allow you
+    to apply constraints to their keys and values. With this, you can step
+    down in the data structure.
+
+    Constraints return just code references that can be applied to one value
+    (and only one value) like this:
+
+      my $result = $object_lists->($value);
+
+    After this call $result contains a Declare::Constraints::Simple::Result
+    object. The first think one wants to know is if the validation
+    succeeded:
+
+      if ($result->is_valid) { ... }
+
+    This is pretty straight forward. To shorten things the result object
+    also overloads it's "bool"ean context. This means you can alternatively
+    just say
+
+      if ($result) { ... }
+
+    However, if the result indicates a invalid data structure, we have a few
+    options to find out what went wrong. There's a human parsable message in
+    the "message" accessor. You can override these by forcing it to a
+    message in a subtree with the "Message" declaration. The "stack"
+    contains the name of the chain of constraints up to the point of
+    failure.
+
+METHODS
+  import($flag, @args)
+    Exports the constraints to the calling namespace.
+
+  _build_handle_map()
+    Internal method to build constraint-to-class mappings.
+
+  _export_all($target, $handle_map)
+    Internal method. Exports all handles in $handle_map into the $target
+    namespace.
+
+  _export_these($target, $handle_map, @constraints)
+    Internal method. Exports all @constraints from $handle_map into the
+    $target namespace.
+
+SEE ALSO
+    Declare::Constraints::Simple::Library,
+    Declare::Constraints::Simple::Result
+
+REQUIRES
+    Carp::Clan, aliased, Class::Inspector, Scalar::Util, overload and
+    Test::More (for build).
+
+TODO
+    *   More tests of course!
+
+    *   An "OnArrayElements" constraint. Like "OnHashKeys" but for array
+        references.
+
+    *   Examples.
+
+    *   A list of questions that might come up, together with their answers.
+
+    *   Inheritance. Developers should be able to make their own libraries
+        and define own constraints.
+
+    *   Dependencies. We need keywords like "As($name, $constraint" and
+        "IfValid($name, $constraint)".
+
+    *   Scoping. It would be nice to have a "Let" constraint that introduces
+        variables. These could be set under their scope with a "SetValue"
+        constraint and retrieved with "GetValue". This would open the
+        possibility of comparison operators.
+
+    *   ???
+
+    *   Profit.
+
+AUTHOR
+    Robert 'phaylon' Sedlacek "<phaylon@dunkelheit.at>"
+
+LICENSE AND COPYRIGHT
+    This module is free software, you can redistribute it and/or modify it
+    under the same terms as perl itself.
+
