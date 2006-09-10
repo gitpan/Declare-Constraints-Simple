@@ -8,9 +8,8 @@ use Declare::Constraints::Simple
     only => qw(And Or XOr Not Matches IsInt IsTrue);
 
 my @test_sets = (
-    [Not,                               "foo",      1,  'Not without list always true'],
+    [Not,                               "foo",      1,  'Not without arg always true'],
     [Not(IsTrue),                       0,          1,  'Not is true'],
-    [Not(IsTrue,IsInt,Matches(qr//)),   "",         0,  'Not one true means false'],
     [Not(Not(IsTrue)),                  23,         1,  'Not doubled neutralizes'],
     [Not(IsTrue),                       23,         0,  'Not turns true to false'],
 

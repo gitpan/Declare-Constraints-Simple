@@ -25,6 +25,7 @@ my @test_sets = (
     [OnHashKeys(foo => IsInt),      {foo => 'bar'}, 'OnHashKeys[foo].IsInt',
                                                         'OnHashKeys stackname'],
     [Message('foo', IsInt),         'foobar',       'Message.IsInt',        'Message stackname'],
+    [HasAllKeys(']Woot['),          {},             'HasAllKeys[\]Woot\[]', 'stack info escaped'],
 );
 
 plan tests => scalar(@test_sets);
