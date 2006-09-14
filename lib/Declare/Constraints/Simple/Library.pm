@@ -33,7 +33,8 @@ and/or reference of said ones.
 General constraints and constraint-like elements that affect the whole
 framework.
 
-Provides: C<Message>, C<Scope>, C<SetResult>, C<IsValid>
+Provides: C<Message>, C<Scope>, C<SetResult>, C<IsValid>, C<ReturnTrue>,
+C<ReturnFalse>
 
 =item L<Declare::Constraints::Simple::Library::Scalar>
 
@@ -65,7 +66,8 @@ C<IsCodeRef>, C<IsRegex>
 
 These constraints deal with array references and their contents.
 
-Provides: C<HasArraySize>
+Provides: C<HasArraySize>, L<OnArrayElements>, L<OnEvenElements>, 
+L<OnOddElements>
 
 =item L<Declare::Constraints::Simple::Library::Hash>
 
@@ -74,12 +76,12 @@ values.
 
 Provides: C<HasAllKeys>, C<OnHashKeys>
 
-=item Declare::Constraints::Simple::Library::Operators
+=item L<Declare::Constraints::Simple::Library::Operators>
 
 Operators can be used in any place a constraint can be used, as
 their implementations are similar.
 
-Provides: C<And>, C<Or>, C<XOr>, C<Not>
+Provides: C<And>, C<Or>, C<XOr>, C<Not>, C<CaseValid>
 
 =back
 

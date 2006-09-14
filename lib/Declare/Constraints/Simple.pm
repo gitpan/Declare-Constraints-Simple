@@ -10,7 +10,7 @@ use strict;
 
 use base 'Declare::Constraints::Simple::Library::Exportable';
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 =head1 SYNOPSIS
 
@@ -186,15 +186,6 @@ L<overload> and L<Test::More> (for build).
 =head1 TODO
 
 =over
-
-=item *
-
-More tests of course!
-
-=item *
-
-An C<OnArrayElements> constraint. Like C<OnHashKeys> but for array
-references.
 
 =item *
 

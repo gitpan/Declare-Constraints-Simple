@@ -155,6 +155,8 @@ sub _export_these {
     my ($class, $target, $handle_map, @decl) = @_;
 
     for my $d (@decl) {
+        my $handle = $handle_map->{$d}
+            or croak "Constraint '$d' cannot be found in $class";
         my $gen = $handle_map->{$d}->fetch_constraint_generator($d);
 
         croak sprintf 

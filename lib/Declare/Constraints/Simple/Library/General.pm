@@ -19,6 +19,10 @@ use Carp::Clan qw(^Declare::Constraints::Simple);
     And( Message( 'You need to specify a Value', IsDefined ),
          Message( 'The specified Value is not an Int', IsInt ));
 
+  # build results
+  my $valid   = ReturnTrue;
+  my $invalid = ReturnFalse('Just because');
+
 =head1 DESCRIPTION
 
 This library is meant to contain those constraints and constraint-like
@@ -114,6 +118,24 @@ constraint 'IsValid',
                 "Value '$name' in scope '$scope' is invalid");
         };
     };
+
+=head2 ReturnTrue()
+
+Returns a true result.
+
+=cut
+
+constraint 'ReturnTrue',
+    sub { return sub { _true } };
+
+=head2 ReturnFalse($msg)
+
+Returns a false result containing C<$msg> as error message.
+
+=cut
+
+constraint 'ReturnFalse',
+    sub { my $msg = shift; return sub { _false($msg) } };
 
 =head1 SEE ALSO
 

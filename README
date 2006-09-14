@@ -163,11 +163,6 @@ REQUIRES
     Test::More (for build).
 
 TODO
-    *   More tests of course!
-
-    *   An "OnArrayElements" constraint. Like "OnHashKeys" but for array
-        references.
-
     *   Examples.
 
     *   A list of questions that might come up, together with their answers.

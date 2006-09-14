@@ -27,6 +27,14 @@ use Carp::Clan qw(^Declare::Constraints::Simple);
   # reverse validity
   my $not_an_integer = Not( IsInt );
 
+  # case valid, validate 'bar' key depending on 'foo' keys value
+  my $struct_prof = 
+    And( IsHashRef,
+         CaseValid( OnHashKeys(foo => IsEq("FooArray")),
+                      OnHashKeys(bar => IsArrayRef),
+                    OnHashKeys(foo => IsEq("FooHash")),
+                      OnHashKeys(bar => IsHashRef) ));
+
 =head1 DESCRIPTION
 
 This module contains the frameworks operators. These constraint like
@@ -113,6 +121,54 @@ constraint 'Not',
             my $r = $c->($_[0]);
             return _false('Constraint returned true') if $r->is_valid;
             return _true;
+        };
+    };
+
+=head2 CaseValid($test, $conseq, $test2, $conseq2, ...)
+
+This runs every given C<$test> argument on the value, until it finds
+one that returns true. If none is found, false is returned. On a true
+result, howver, the corresponding C<$conseq> constraint is applied to
+the value and it's result returned. This allows validation depending
+on other properties of the value:
+
+  my $flexible = CaseValid( IsArrayRef,
+                              And( HasArraySize(1,5), 
+                                   OnArrayElements(0 => IsInt) ),
+                            IsHashRef,
+                              And( HasHashElements(qw( head tail )),
+                                   OnHashKeys(head => IsInt) ));
+
+Of course, you could model most of it probably with the other
+operators, but this is a bit more readable. For default cases use
+C<ReturnTrue> from L<Declare::Constraints::Simple::Library::General>
+as test.
+
+=cut
+
+constraint 'CaseValid',
+    sub {
+        my @defs = @_;
+        my ($c, @cases);
+        while (my $test = shift @defs) {
+            $c++;
+            croak "CaseValid test nr $c is not a constraint"
+                unless ref($test) eq 'CODE';
+
+            my $conseq = shift @defs;
+            croak "CaseValid consequence nr $c is not a constraint"
+                unless ref($test) eq 'CODE';
+
+            push @cases, [$test, $conseq];
+        }
+
+        return sub {
+            for my $case (@cases) {
+                my ($test, $conseq) = @$case;
+                next unless $test->($_[0])->is_valid;
+                return $conseq->($_[0]);
+            }
+            _false('No matching case');
         };
     };
 

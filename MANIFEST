@@ -33,6 +33,7 @@ t/05-constraints-hash.t
 t/06-constraints-array.t
 t/10-constraints-operators.t
 t/11-libraries.t
+t/12-general.t
 t/23-stacknames.t
 t/33-complex.t
 t/34-scoping.t

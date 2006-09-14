@@ -9,11 +9,22 @@ use warnings;
 use strict;
 
 use Declare::Constraints::Simple-Library;
+use Carp::Clan qw(^Declare::Constraints::Simple);
 
 =head1 SYNOPSIS
 
   # accept a list of pairs
   my $pairs_validation = IsArrayRef( HasArraySize(2,2) );
+
+  # integer => object pairs
+  my $pairs = And( OnEvenElements(IsInt), 
+                   OnOddElements(IsObject) );
+
+  # a three element array
+  my $tri = And( HasArraySize(3,3),
+                 OnArrayElements(0, IsInt,
+                                 1, IsDefined,
+                                 2, IsClass) );
 
 =head1 DESCRIPTION
 
@@ -49,6 +60,88 @@ constraint 'HasArraySize',
                 unless $max;
             return _false("More than $max Array elements")
                 unless scalar(@{$_[0]}) <= $max;
+            return _true;
+        };
+    };
+
+=head2 OnArrayElements($key => $constraint, $key => $constraint, ...)
+
+Applies the the C<$constraint>s to the corresponding C<$key>s if they are
+present. For required keys see C<HasArraySize>.
+
+=cut
+
+constraint 'OnArrayElements',
+    sub {
+        my %keymap = @_;
+        my @keys   = sort keys %keymap;
+        for (@keys) {
+            croak "Not an array index: $_" if $_ =~ /\D/;
+        }
+        
+        return sub {
+            return _false('Undefined Value') unless defined $_[0];
+            return _false('Not an ArrayRef') 
+                unless ref($_[0]) eq 'ARRAY';
+            for my $k (@keys) {
+                last if $k > $#{$_[0]};
+                my $r = $keymap{$k}->($_[0][$k]);
+                _info($k);
+                return $r unless $r->is_valid;
+            }
+            return _true;
+        }
+    };
+
+=head2 OnEvenElements($constraint)
+
+Runs the constraint on all even elements of an array. See also 
+C<OnOddElements>.
+
+=cut
+
+constraint 'OnEvenElements',
+    sub {
+        my ($c) = @_;
+
+        return sub {
+            return _false('Undefined Value') unless defined $_[0];
+            return _false('Not an ArrayRef')
+                unless ref($_[0]) eq 'ARRAY';
+            my $p = 0;
+            while ($p <= $#{$_[0]}) {
+                my $r = $c->($_[0][$p]);
+                _info($p);
+                return $r unless $r->is_valid;
+                $p += 2;
+            }
+            return _true;
+        };
+    };
+
+
+=head2 OnOddElements($constraint)
+
+Runs the constraint on all odd elements of an array. See also
+C<OnEvenElements>.
+
+=cut
+
+constraint 'OnOddElements',
+    sub {
+        my ($c) = @_;
+
+        return sub {
+            return _false('Undefined Value') unless defined $_[0];
+            return _false('Not an ArrayRef')
+                unless ref($_[0]) eq 'ARRAY';
+            my $p = 1;
+            while ($p <= $#{$_[0]}) {
+                my $r = $c->($_[0][$p]);
+                _info($p);
+                return $r unless $r->is_valid;
+                $p += 2;
+            }
             return _true;
         };
     };
